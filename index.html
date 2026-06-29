@@ -330,6 +330,15 @@ h1 .spark{color:var(--signal)}
 .shape.feat .for{border-top-color:var(--line-dark);color:#E7E2D5}
 .shape .badge{align-self:flex-start;margin-bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:var(--signal);color:var(--signal-ink);padding:5px 11px;border-radius:100px;font-weight:700;line-height:1}
 
+/* === WHAT BECOMES POSSIBLE (early punch band) === */
+.possible-h{font-family:var(--display);font-weight:700;font-size:clamp(28px,4.6vw,52px);line-height:1.03;letter-spacing:-.025em;max-width:21ch;margin-top:22px}
+.deltas{margin-top:clamp(32px,4.4vw,52px);border-top:1px solid var(--line)}
+.delta{display:grid;grid-template-columns:1fr auto 1.05fr;gap:clamp(14px,3vw,44px);align-items:center;padding:clamp(17px,2.3vw,25px) 0;border-bottom:1px solid var(--line)}
+.delta .was{font-size:clamp(14.5px,1.5vw,17px);color:var(--muted);line-height:1.36}
+.delta .ar{font-family:var(--mono);color:var(--signal-deep);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;text-align:center}
+.delta .now{font-family:var(--display);font-weight:600;font-size:clamp(16px,1.9vw,21px);line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+.possible-foot{margin-top:26px;font-size:16px;color:var(--muted)}
+
 /* === ORIENTATION / PRIMER (lineage hat-tip) === */
 .primer-head{max-width:22ch}
 .lineage{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;margin-top:clamp(32px,4vw,48px)}
@@ -411,6 +420,8 @@ h1 .spark{color:var(--signal)}
 @media (max-width:880px){
   .split,.field-grid,.trust,.ways{grid-template-columns:1fr}
   .lineage .arrow{display:none}
+  .delta{grid-template-columns:1fr;gap:7px;padding:18px 0}
+  .delta .ar{text-align:left;justify-self:start}
   .gap-grid{grid-template-columns:1fr}
   .phases{grid-template-columns:1fr 1fr}
   .kit{grid-template-columns:1fr}
@@ -473,6 +484,46 @@ h1 .spark{color:var(--signal)}
     </div>
   </div>
 </header>
+
+<!-- ============================================================ -->
+<!-- === WHAT BECOMES POSSIBLE (early punch) ==================== -->
+<!-- ============================================================ -->
+<section class="section possible">
+  <div class="wrap">
+    <div class="eyebrow rise" style="color:var(--signal-deep)">What becomes possible</div>
+    <h2 class="possible-h rise">10&times; to 100&times; isn't a slogan. It's what's left when the busywork disappears.</h2>
+
+    <div class="deltas stagger">
+      <div class="delta">
+        <span class="was">Reformatting the same grant story into each funder's template &mdash; a full day, every time.</span>
+        <span class="ar">becomes</span>
+        <span class="now">A solid first draft in <span class="mark">minutes</span>, in your voice.</span>
+      </div>
+      <div class="delta">
+        <span class="was">The quarterly impact report, assembled by hand the night before the board meeting.</span>
+        <span class="ar">becomes</span>
+        <span class="now"><span class="mark">One click</span> from your live numbers &mdash; charts and findings written for you.</span>
+      </div>
+      <div class="delta">
+        <span class="was">One good story, rewritten by hand for the newsletter, the socials, and the appeal.</span>
+        <span class="ar">becomes</span>
+        <span class="now"><span class="mark">Every channel at once</span>, on brand.</span>
+      </div>
+      <div class="delta">
+        <span class="was">An hour of case notes after every single client.</span>
+        <span class="ar">becomes</span>
+        <span class="now">A structured record drafted <span class="mark">from the conversation</span>.</span>
+      </div>
+      <div class="delta">
+        <span class="was">Donor and intake details scattered across a dozen spreadsheets.</span>
+        <span class="ar">becomes</span>
+        <span class="now"><span class="mark">One searchable place</span> that updates itself.</span>
+      </div>
+    </div>
+
+    <p class="possible-foot rise">Every one of these is built for a specific person on your team. Keep going to see who gets what &mdash; and how it's made.</p>
+  </div>
+</section>
 
 <!-- ============================================================ -->
 <!-- === ORIENTATION / PRIMER =================================== -->
@@ -598,26 +649,19 @@ h1 .spark{color:var(--signal)}
     <div class="split" style="margin-top:34px">
       <div class="col rise">
         <p class="body" style="margin-top:0">
-          The whole engagement is built on a promise that's easy to state and easy to keep:
+          The whole engagement rests on a promise that's easy to state and easy to keep:
           every tool is made to help a <em>specific named person</em> do the part of their job that
           only they can do — and to delete the part a computer should have been doing all along.
-        </p>
-        <p class="body">
-          That's where the leverage hides. The development director still decides which funders to
-          court and how to tell the story; she just stops losing a full day reformatting the same
-          narrative into the eleventh application. The program coordinator still runs the program;
-          he just stops hand-copying numbers between five spreadsheets to build the quarterly report.
+          The development director still decides which funders to court and how to tell the story.
+          The program coordinator still runs the program. The drudgery around them is what goes.
         </p>
       </div>
       <div class="col rise">
-        <p class="pull" style="margin-top:0">
-          10× to 100× isn't hype when a task that ate a <span class="spark" style="color:var(--clay)">whole day</span> now takes <span class="mark">ten minutes.</span>
-        </p>
-        <p class="body">
-          The honest version: the multiplier is real, but it's <strong>task by task</strong>, not a
-          blanket claim over everything. The win that compounds is the hours given back every single
-          week — handed to the mission instead of the paperwork. Nobody on staff becomes redundant.
-          Everybody becomes harder to replace.
+        <p class="body" style="margin-top:0">
+          So the multiplier up top is real, but it's honest: <strong>task by task</strong>, not a blanket
+          claim over everything. The win that compounds is the hours handed back every single week —
+          given to the mission instead of the paperwork. Nobody on staff becomes redundant.
+          Everybody becomes <span class="mark">harder to replace.</span>
         </p>
       </div>
     </div>
