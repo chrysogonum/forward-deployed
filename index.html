@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forward Deployed — Embedded AI Prototyping for Nonprofits</title>
+
+<!--
+  PROPOSAL: Forward Deployed Engineer (FDE) services for small nonprofits.
+  Design system: "Field Manual" — an engineer who shows up where the work happens.
+  Palette: deep pine ink + warm paper + citron signal (the "spark" of a working tool).
+  Type: Bricolage Grotesque (display, humanist-industrial), Newsreader (serif body, warmth),
+        JetBrains Mono (field-note labels & coordinates).
+  Single self-contained file. No build step. Respects reduced motion.
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================= */
+/* === TOKENS ================================================== */
+/* ============================================================= */
+:root{
+  --ink:        #14302A;   /* deep pine, warm near-black — text & dark panels   */
+  --ink-2:      #0D2019;   /* deeper still — hero floor                          */
+  --pine:       #245A4C;   /* mid pine — secondary structure                     */
+  --paper:      #F3EEE3;   /* warm drafting paper — base                         */
+  --paper-2:    #EAE1D1;   /* deeper paper — section banding                      */
+  --card:       #FBF8F0;   /* card surface                                       */
+  --signal:     #CFE83F;   /* citron — THE spark. used sparingly.                */
+  --signal-ink: #1c2a00;   /* text on citron                                     */
+  --clay:       #C7613A;   /* warm tertiary — used rarely, for human notes       */
+  --muted:      #5E6E66;   /* muted ink on paper                                 */
+  --muted-pine: #9FB6AB;   /* muted on dark                                      */
+  --line:       rgba(20,48,42,.18);
+  --line-soft:  rgba(20,48,42,.10);
+  --line-dark:  rgba(207,232,63,.20);
+
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --body:    "Newsreader", Georgia, serif;
+  --mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --col: min(1120px, 92vw);
+  --gut: clamp(20px, 5vw, 64px);
+}
+
+/* ============================================================= */
+/* === RESET / BASE ============================================ */
+/* ============================================================= */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:clamp(17px,1.15vw,19px);
+  line-height:1.62;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--signal);color:var(--signal-ink)}
+a{color:inherit}
+
+/* ============================================================= */
+/* === SHARED STRUCTURE ======================================== */
+/* ============================================================= */
+.wrap{width:var(--col);margin-inline:auto}
+.section{padding-block:clamp(64px,9vw,128px);position:relative}
+.section--paper2{background:var(--paper-2)}
+.section--dark{background:var(--ink);color:var(--paper)}
+.section--floor{background:var(--ink-2);color:var(--paper)}
+
+/* field-manual title block: a mono label + section index + rule */
+.block{
+  display:flex;align-items:baseline;gap:18px;
+  font-family:var(--mono);font-size:13px;font-weight:500;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:clamp(28px,4vw,52px);
+}
+.section--dark .block,.section--floor .block{color:var(--muted-pine)}
+.block .idx{color:var(--ink);font-weight:700}
+.section--dark .block .idx,.section--floor .block .idx{color:var(--signal)}
+.block .tick{
+  flex:1;height:1px;background:var(--line);
+  position:relative;top:-4px;
+}
+.section--dark .block .tick,.section--floor .block .tick{background:var(--line-dark)}
+.block .tick::before,.block .tick::after{
+  content:"";position:absolute;top:-3px;width:1px;height:7px;background:var(--line);
+}
+.section--dark .block .tick::before,.section--dark .block .tick::after,
+.section--floor .block .tick::before,.section--floor .block .tick::after{background:var(--line-dark)}
+.block .tick::before{left:0}
+.block .tick::after{right:0}
+
+h2{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:clamp(30px,5vw,56px);
+  line-height:1.02;
+  letter-spacing:-.02em;
+  max-width:18ch;
+}
+h3{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:clamp(21px,2.4vw,27px);
+  line-height:1.08;
+  letter-spacing:-.01em;
+}
+.lede{
+  font-size:clamp(20px,2.3vw,27px);
+  line-height:1.45;
+  max-width:30ch;
+  margin-top:22px;
+  color:var(--ink);
+}
+.section--dark .lede{color:var(--paper)}
+p.body{max-width:62ch;margin-top:18px;color:var(--ink)}
+.section--dark p.body,.section--floor p.body{color:#E7E2D5}
+.muted{color:var(--muted)}
+.section--dark .muted,.section--floor .muted{color:var(--muted-pine)}
+em{font-style:italic}
+strong{font-weight:600}
+.mark{
+  background:linear-gradient(transparent 60%, var(--signal) 60%);
+  padding:0 .05em;
+}
+
+/* ============================================================= */
+/* === HERO ==================================================== */
+/* ============================================================= */
+.hero{
+  background:var(--ink-2);color:var(--paper);
+  position:relative;overflow:hidden;
+  padding-block:clamp(48px,10vw,96px);
+  min-height:100svh;display:flex;flex-direction:column;
+}
+/* topographic contour atmosphere — concentric, drawn with radial gradients */
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:0;opacity:.5;
+  background:
+    radial-gradient(120% 90% at 82% 18%, rgba(36,90,76,.55), transparent 60%),
+    radial-gradient(80% 70% at 12% 92%, rgba(36,90,76,.35), transparent 55%);
+}
+.hero .grid-bg{
+  position:absolute;inset:0;z-index:0;opacity:.16;
+  background-image:
+    linear-gradient(var(--muted-pine) 1px, transparent 1px),
+    linear-gradient(90deg, var(--muted-pine) 1px, transparent 1px);
+  background-size:48px 48px;
+  -webkit-mask-image:radial-gradient(120% 100% at 70% 30%, #000 0%, transparent 75%);
+          mask-image:radial-gradient(120% 100% at 70% 30%, #000 0%, transparent 75%);
+}
+.hero .contours{position:absolute;right:-12%;top:-8%;width:min(900px,75vw);z-index:0;opacity:.28;pointer-events:none}
+.hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;flex:1}
+
+.hero-top{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted-pine);
+  padding-bottom:clamp(40px,8vw,80px);
+}
+.hero-top .sig{color:var(--signal);font-weight:700}
+
+.eyebrow{
+  font-family:var(--mono);font-size:clamp(12px,1.3vw,14px);
+  letter-spacing:.22em;text-transform:uppercase;color:var(--signal);
+  display:flex;align-items:center;gap:14px;
+}
+.eyebrow::before{content:"";width:34px;height:2px;background:var(--signal);display:inline-block}
+
+h1{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(44px,9vw,116px);
+  line-height:.94;
+  letter-spacing:-.035em;
+  margin-top:26px;
+  max-width:16ch;
+}
+h1 .spark{color:var(--signal)}
+.hero-sub{
+  font-size:clamp(19px,2.1vw,25px);
+  line-height:1.5;
+  max-width:46ch;
+  margin-top:30px;
+  color:#E7E2D5;
+}
+.hero-foot{
+  margin-top:auto;padding-top:clamp(40px,7vw,72px);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:28px;
+  border-top:1px solid var(--line-dark);
+}
+.hero-foot .rec{font-family:var(--mono);font-size:12.5px;letter-spacing:.05em}
+.hero-foot .rec .k{color:var(--muted-pine);text-transform:uppercase;letter-spacing:.16em;font-size:11px;display:block;margin-bottom:7px}
+.hero-foot .rec .v{color:var(--paper);font-size:15px;line-height:1.4}
+
+/* ============================================================= */
+/* === GAP CARDS =============================================== */
+/* ============================================================= */
+.gap-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  margin-top:clamp(36px,5vw,60px);
+}
+.gap-cell{background:var(--paper);padding:clamp(26px,3.2vw,40px)}
+.gap-cell .q{
+  font-family:var(--display);font-weight:600;font-size:clamp(19px,2vw,24px);
+  line-height:1.18;letter-spacing:-.01em;
+}
+.gap-cell .q::before{
+  content:"“";color:var(--clay);font-size:1.4em;line-height:0;
+  margin-right:.06em;vertical-align:-.32em;font-family:var(--body);
+}
+.gap-cell .a{margin-top:14px;font-size:16px;color:var(--muted);line-height:1.5}
+.gap-cell .tag{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);display:block;margin-bottom:14px;
+}
+
+.pull{
+  margin-top:clamp(40px,5vw,64px);
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(23px,3.2vw,38px);line-height:1.18;letter-spacing:-.02em;
+  max-width:24ch;
+}
+
+/* ============================================================= */
+/* === TWO-COL PROSE =========================================== */
+/* ============================================================= */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(36px,6vw,90px);align-items:start}
+.split .col p.body:first-child{margin-top:0}
+.note{
+  border-left:2px solid var(--signal);
+  padding:6px 0 6px 20px;margin-top:26px;
+  font-size:16px;color:var(--muted);font-style:italic;
+}
+.section--dark .note{color:var(--muted-pine)}
+
+/* ============================================================= */
+/* === PHASES (THE ENGAGEMENT) ================================= */
+/* ============================================================= */
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-dark);margin-top:clamp(36px,5vw,56px);border:1px solid var(--line-dark)}
+.phase{background:var(--ink);padding:clamp(24px,2.6vw,34px);position:relative;min-height:240px;display:flex;flex-direction:column}
+.phase .pn{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--signal);font-weight:700}
+.phase h3{margin-top:18px;color:var(--paper)}
+.phase p{margin-top:14px;font-size:15.5px;line-height:1.5;color:#D8D3C6}
+.phase .when{margin-top:auto;padding-top:18px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-pine)}
+
+/* ============================================================= */
+/* === FIELD CARDS (signature) ================================= */
+/* ============================================================= */
+.field-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(20px,2.4vw,28px);margin-top:clamp(36px,5vw,60px)}
+.fcard{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:3px;position:relative;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 1px 0 rgba(20,48,42,.04);
+  transition:transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s;
+}
+.fcard:hover{transform:translateY(-4px);box-shadow:0 18px 40px -24px rgba(20,48,42,.5)}
+.fcard-head{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  padding:22px 24px 18px;border-bottom:1px dashed var(--line);
+}
+.fcard-head .role{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.01em;line-height:1.05}
+.fcard-head .comfort{
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);text-align:right;white-space:nowrap;flex-shrink:0;
+  border:1px solid var(--line);border-radius:100px;padding:5px 10px;
+}
+.fcard-body{padding:20px 24px 8px;flex:1}
+.fcard .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.fcard .week{margin-top:8px;font-size:16px;line-height:1.46;color:var(--ink)}
+.fcard-build{
+  margin:18px 24px 24px;background:var(--ink);color:var(--paper);
+  border-radius:3px;padding:18px 20px;
+}
+.fcard-build .lab{color:var(--signal)}
+.fcard-build .what{margin-top:9px;font-size:15.5px;line-height:1.46;color:#E7E2D5}
+.fcard-build .stack{
+  margin-top:14px;display:flex;flex-wrap:wrap;gap:7px;
+}
+.fcard-build .chip{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;
+  color:var(--signal);border:1px solid var(--line-dark);border-radius:100px;
+  padding:4px 9px;
+}
+
+/* ============================================================= */
+/* === TOOLKIT ================================================= */
+/* ============================================================= */
+.kit{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:clamp(36px,5vw,56px)}
+.kit-cell{background:var(--paper);padding:clamp(24px,2.6vw,32px)}
+.kit-cell .n{font-family:var(--mono);font-size:12px;color:var(--clay);font-weight:700;letter-spacing:.1em}
+.kit-cell h3{margin-top:14px;font-size:20px}
+.kit-cell p{margin-top:11px;font-size:15.5px;line-height:1.5;color:var(--muted)}
+.kit-cell .ev{margin-top:13px;font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--ink);letter-spacing:.01em;border-top:1px solid var(--line-soft);padding-top:12px}
+.kit-cell .ev b{color:var(--pine);font-weight:700}
+
+/* ============================================================= */
+/* === TRUST =================================================== */
+/* ============================================================= */
+.trust{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(24px,3vw,40px) clamp(36px,5vw,72px);margin-top:clamp(36px,5vw,56px)}
+.trust .item{display:flex;gap:18px;align-items:flex-start}
+.trust .item .dot{width:11px;height:11px;border-radius:50%;background:var(--signal);flex-shrink:0;margin-top:9px;box-shadow:0 0 0 4px rgba(207,232,63,.18)}
+.section--dark .trust .item h3{color:var(--paper);font-size:19px}
+.trust .item p{margin-top:8px;font-size:15.5px;line-height:1.5;color:#D8D3C6}
+
+/* ============================================================= */
+/* === SHAPES (engagement models) ============================== */
+/* ============================================================= */
+.shapes{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.2vw,26px);margin-top:clamp(36px,5vw,56px)}
+.shape{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:clamp(26px,2.8vw,34px);display:flex;flex-direction:column}
+.shape.feat{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.shape .nm{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.shape.feat .nm{color:var(--signal)}
+.shape h3{margin-top:14px;font-size:23px}
+.shape.feat h3{color:var(--paper)}
+.shape .dur{margin-top:6px;font-family:var(--mono);font-size:13px;color:var(--clay)}
+.shape.feat .dur{color:var(--signal)}
+.shape p{margin-top:16px;font-size:15.5px;line-height:1.5;color:var(--muted);flex:1}
+.shape.feat p{color:#D8D3C6}
+.shape .for{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}
+.shape.feat .for{border-top-color:var(--line-dark);color:#E7E2D5}
+.shape .badge{align-self:flex-start;margin-bottom:16px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:var(--signal);color:var(--signal-ink);padding:5px 11px;border-radius:100px;font-weight:700;line-height:1}
+
+/* === ORIENTATION / PRIMER (lineage hat-tip) === */
+.primer-head{max-width:22ch}
+.lineage{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap;margin-top:clamp(32px,4vw,48px)}
+.lineage .node{flex:1;min-width:210px;background:var(--card);border:1px solid var(--line);border-radius:3px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.lineage .node--now{background:var(--ink);border-color:var(--ink)}
+.lineage .yr{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lineage .node--now .yr{color:var(--signal)}
+.lineage .nm{font-family:var(--display);font-weight:600;font-size:16.5px;line-height:1.18;letter-spacing:-.01em;color:var(--ink)}
+.lineage .node--now .nm{color:var(--paper)}
+.lineage .arrow{align-self:center;font-family:var(--mono);color:var(--muted);font-size:18px}
+
+/* === TWO WAYS IN (build for you / teach you) === */
+.ways{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.6vw,30px);margin-top:clamp(36px,5vw,56px)}
+.way{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:clamp(28px,3vw,40px);display:flex;flex-direction:column}
+.way--teach{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.way-tag{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.way--teach .way-tag{color:var(--signal)}
+.way h3{margin-top:14px;font-size:clamp(23px,2.7vw,31px)}
+.way--teach h3{color:var(--paper)}
+.way-sum{margin-top:15px;font-size:16.5px;line-height:1.48;color:var(--ink)}
+.way--teach .way-sum{color:#E7E2D5}
+.way-list{margin-top:18px;list-style:none;display:flex;flex-direction:column;gap:11px;flex:1}
+.way-list li{position:relative;padding-left:22px;font-size:15.5px;line-height:1.42;color:var(--muted)}
+.way-list li::before{content:"";position:absolute;left:0;top:9px;width:8px;height:8px;background:var(--signal);border-radius:50%}
+.way-for{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;color:var(--ink)}
+.way--teach .way-for{border-top-color:var(--line-dark);color:#E7E2D5}
+.hood{margin-top:18px;flex:1;display:flex;flex-direction:column;gap:9px}
+.hood-row{border:1px dashed var(--line-dark);border-radius:3px;padding:13px 15px}
+.hl-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:6px}
+.hl-lab.raw{color:var(--muted-pine)}
+.hl-lab.good{color:var(--signal)}
+.hood-txt{font-size:14.5px;line-height:1.42;color:#D8D3C6}
+.hood-arrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-pine);text-align:center}
+.glide{max-width:34ch}
+
+/* ============================================================= */
+/* === CLOSE =================================================== */
+/* ============================================================= */
+.close-h{font-family:var(--display);font-weight:800;font-size:clamp(38px,7vw,82px);line-height:.96;letter-spacing:-.03em;max-width:15ch}
+.close-h .spark{color:var(--signal)}
+.cta-row{margin-top:clamp(34px,4vw,48px);display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.cta{
+  font-family:var(--mono);font-size:14px;letter-spacing:.04em;font-weight:500;
+  text-decoration:none;display:inline-flex;align-items:center;gap:10px;
+  background:var(--signal);color:var(--signal-ink);
+  padding:16px 26px;border-radius:3px;
+  transition:transform .25s, box-shadow .25s;
+}
+.cta:hover{transform:translateY(-2px);box-shadow:0 14px 30px -16px rgba(207,232,63,.7)}
+.cta.ghost{background:transparent;color:var(--paper);border:1px solid var(--line-dark)}
+.cta.ghost:hover{border-color:var(--signal);box-shadow:none}
+.colophon{
+  margin-top:clamp(56px,8vw,96px);padding-top:24px;border-top:1px solid var(--line-dark);
+  font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--muted-pine);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+
+/* ============================================================= */
+/* === MOTION ================================================== */
+/* ============================================================= */
+.rise{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1)}
+.rise.in{opacity:1;transform:none}
+.stagger>*{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1)}
+.stagger.in>*{opacity:1;transform:none}
+.stagger.in>*:nth-child(2){transition-delay:.07s}
+.stagger.in>*:nth-child(3){transition-delay:.14s}
+.stagger.in>*:nth-child(4){transition-delay:.21s}
+.stagger.in>*:nth-child(5){transition-delay:.28s}
+.stagger.in>*:nth-child(6){transition-delay:.35s}
+
+/* hero load */
+.hl{opacity:0;transform:translateY(20px);animation:hlin .9s cubic-bezier(.2,.7,.2,1) forwards}
+.hl.d1{animation-delay:.05s}.hl.d2{animation-delay:.18s}.hl.d3{animation-delay:.32s}.hl.d4{animation-delay:.46s}.hl.d5{animation-delay:.6s}
+@keyframes hlin{to{opacity:1;transform:none}}
+
+/* ============================================================= */
+/* === RESPONSIVE ============================================== */
+/* ============================================================= */
+@media (max-width:880px){
+  .split,.field-grid,.trust,.ways{grid-template-columns:1fr}
+  .lineage .arrow{display:none}
+  .gap-grid{grid-template-columns:1fr}
+  .phases{grid-template-columns:1fr 1fr}
+  .kit{grid-template-columns:1fr}
+  .shapes{grid-template-columns:1fr}
+  .hero-foot{grid-template-columns:1fr;gap:18px}
+  h2{max-width:100%}
+}
+@media (max-width:560px){
+  .phases{grid-template-columns:1fr}
+  .hero-top{flex-direction:column;align-items:flex-start;gap:8px}
+  .fcard-head{flex-direction:column}
+  .fcard-head .comfort{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto !important}
+  .rise,.stagger>*,.hl{opacity:1 !important;transform:none !important;animation:none !important;transition:none !important}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================ -->
+<!-- === HERO =================================================== -->
+<!-- ============================================================ -->
+<header class="hero">
+  <div class="grid-bg"></div>
+  <!-- topographic contour signature -->
+  <svg class="contours" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g stroke="#CFE83F" stroke-width="1.1">
+      <circle cx="300" cy="300" r="56"/>
+      <circle cx="300" cy="300" r="104"/>
+      <circle cx="296" cy="304" r="158"/>
+      <circle cx="288" cy="312" r="214"/>
+      <circle cx="278" cy="322" r="272"/>
+      <circle cx="266" cy="334" r="330"/>
+    </g>
+    <circle cx="300" cy="300" r="6" fill="#CFE83F"/>
+  </svg>
+
+  <div class="wrap hero-inner">
+    <div class="hero-top hl d1">
+      <span>Forward&nbsp;Deployed&nbsp;<span class="sig">/ Field Manual</span></span>
+      <span>A proposal &middot; 2026</span>
+    </div>
+
+    <div class="eyebrow hl d2">Embedded AI prototyping for mission-driven teams</div>
+    <h1 class="hl d3">Sit with the staff.<br/>Learn the work.<br/>Build the <span class="spark">tool.</span></h1>
+    <p class="hero-sub hl d4">
+      Most small nonprofits aren't behind on AI because they're unwilling. They're behind
+      because no one has sat down with their staff, learned what the work actually is, and
+      built something that fits it. This is a proposal to do exactly that — one person, one
+      organization, one prototype at a time.
+    </p>
+
+    <div class="hero-foot hl d5">
+      <div class="rec"><span class="k">The role</span><span class="v">A forward deployed engineer, embedded in your team</span></div>
+      <div class="rec"><span class="k">For</span><span class="v">Small &amp; mid-size nonprofits curious — or wary — about AI</span></div>
+      <div class="rec"><span class="k">Method</span><span class="v">Listen &rarr; map &rarr; prototype &rarr; hand off</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- === ORIENTATION / PRIMER =================================== -->
+<!-- ============================================================ -->
+<section class="section section--paper2">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">00</span> Orientation <span class="tick"></span> Where this comes from</div>
+    <h2 class="rise primer-head">First &mdash; what a &ldquo;forward deployed engineer&rdquo; is.</h2>
+    <p class="body rise">
+      It's a term from the software industry: someone a technology company sends to
+      <strong>embed directly with a customer</strong> &mdash; not to sell a product, but to sit beside the
+      people using it, learn the work, and tune the thing until it fits.
+    </p>
+    <p class="body rise">
+      The role grew up in high-stakes enterprise software and is now central to the frontier AI labs &mdash;
+      OpenAI and others field forward-deployed teams, half-jokingly making the labs
+      <em>deployment companies</em> first and model-makers second. But that attention points almost
+      entirely at the giants.
+    </p>
+    <p class="body rise">
+      This proposal brings the same model down to your size, from an <strong>independent provider</strong>
+      rather than a sales org: I get your team onto the right tools &mdash; say, a five-seat Claude Team
+      plan &mdash; learn each person's work, then either build the tools for you or teach your staff to
+      build them. <span class="muted">The rest of this document is the how.</span>
+    </p>
+    <div class="lineage stagger">
+      <div class="node"><span class="yr">Origin</span><span class="nm">High-stakes enterprise software</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node"><span class="yr">Today</span><span class="nm">AI labs field FDE teams for the giants</span></div>
+      <span class="arrow">&rarr;</span>
+      <div class="node node--now"><span class="yr">This proposal</span><span class="nm">An independent FDE, for small orgs</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE GAP ================================================ -->
+<!-- ============================================================ -->
+<section class="section">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">01</span> The gap <span class="tick"></span> Why this, why now</div>
+    <h2 class="rise">The barrier was never the technology.</h2>
+    <p class="body rise muted">
+      When AI doesn't land at a small nonprofit, it's rarely about software. It's about the
+      distance between a general-purpose tool and the specific, idiosyncratic way a particular
+      team gets its work done. Four things tend to be said out loud:
+    </p>
+
+    <div class="gap-grid stagger">
+      <div class="gap-cell">
+        <span class="tag">Heard in the office — 01</span>
+        <p class="q">We don't really know what's possible.</p>
+        <p class="a">The headlines are about chatbots and lawsuits. Nobody has shown us what AI does for <em>our</em> intake forms, <em>our</em> grant calendar, <em>our</em> volunteer list.</p>
+      </div>
+      <div class="gap-cell">
+        <span class="tag">Heard in the office — 02</span>
+        <p class="q">We're afraid it's about replacing people.</p>
+        <p class="a">Our staff are stretched thin and loyal. The last thing we want is to make anyone feel like the goal is to do their job without them.</p>
+      </div>
+      <div class="gap-cell">
+        <span class="tag">Heard in the office — 03</span>
+        <p class="q">We can't afford a tech team.</p>
+        <p class="a">There's no budget line for a software developer, and the off-the-shelf platforms cost more than they save and still don't fit.</p>
+      </div>
+      <div class="gap-cell">
+        <span class="tag">Heard in the office — 04</span>
+        <p class="q">The generic tools don't fit how we work.</p>
+        <p class="a">We've tried the all-in-one systems. We end up bending our work to the software instead of the other way around.</p>
+      </div>
+    </div>
+
+    <p class="pull rise">
+      The missing piece isn't another tool. It's a <span class="mark">person who understands both
+      the tools and your work</span> — and who builds the gap closed.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE MODEL ============================================== -->
+<!-- ============================================================ -->
+<section class="section section--dark">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">02</span> The model <span class="tick"></span> What a forward deployed engineer is</div>
+    <div class="split">
+      <div class="col rise">
+        <h2>Borrowed from one of the hardest problems in software.</h2>
+        <p class="note">
+          The “forward deployed engineer” emerged in live, high-stakes, constantly-changing
+          software environments — the kind where slideware fails and only working software counts.
+        </p>
+      </div>
+      <div class="col rise">
+        <p class="body">
+          A forward deployed engineer doesn't sell you a product from across a table. They
+          <strong>embed inside your team</strong>, learn the domain from the people who actually do
+          the work, and build and adjust real software against your real problems — in the room,
+          in real time.
+        </p>
+        <p class="body">
+          The role grew up inside large, complex enterprises — places where the stakes were high and
+          the systems never sat still. But the model travels surprisingly well. A food bank, a land
+          trust, a literacy program, a small arts nonprofit — each is a “dynamic, continuously
+          evolving” operation with deep domain knowledge locked in its people and almost none of it
+          written down. That is exactly the environment the role was designed for.
+        </p>
+        <p class="body">
+          The difference for you is the scale and the tone: not a sprawling enterprise rollout, but a
+          patient hand that makes mission-driven people faster at the work they already love.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE REFRAME ============================================ -->
+<!-- ============================================================ -->
+<section class="section section--paper2">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">03</span> The reframe <span class="tick"></span> Augment, don't replace</div>
+    <h2 class="rise">Hand each person a power tool — not a pink slip.</h2>
+    <div class="split" style="margin-top:34px">
+      <div class="col rise">
+        <p class="body" style="margin-top:0">
+          The whole engagement is built on a promise that's easy to state and easy to keep:
+          every tool is made to help a <em>specific named person</em> do the part of their job that
+          only they can do — and to delete the part a computer should have been doing all along.
+        </p>
+        <p class="body">
+          That's where the leverage hides. The development director still decides which funders to
+          court and how to tell the story; she just stops losing a full day reformatting the same
+          narrative into the eleventh application. The program coordinator still runs the program;
+          he just stops hand-copying numbers between five spreadsheets to build the quarterly report.
+        </p>
+      </div>
+      <div class="col rise">
+        <p class="pull" style="margin-top:0">
+          10× to 100× isn't hype when a task that ate a <span class="spark" style="color:var(--clay)">whole day</span> now takes <span class="mark">ten minutes.</span>
+        </p>
+        <p class="body">
+          The honest version: the multiplier is real, but it's <strong>task by task</strong>, not a
+          blanket claim over everything. The win that compounds is the hours given back every single
+          week — handed to the mission instead of the paperwork. Nobody on staff becomes redundant.
+          Everybody becomes harder to replace.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === TWO WAYS IN ============================================ -->
+<!-- ============================================================ -->
+<section class="section">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">04</span> Two ways in <span class="tick"></span> Build for you, or build your builders</div>
+    <h2 class="rise">You can hire the tool — or learn to make your own.</h2>
+    <p class="body rise muted">
+      The starting point is identical: I sit with your team and build something real against
+      your actual work. What happens after the build is the choice — and most teams end up
+      wanting some of both.
+    </p>
+
+    <div class="ways stagger">
+
+      <!-- Mode A: done-for-you -->
+      <article class="way">
+        <span class="way-tag">Mode A · Done for you</span>
+        <h3>I build it for you.</h3>
+        <p class="way-sum">
+          The embedded builder. You point at the work; I ship the tools. The fastest path to
+          hours back — ideal when no one on staff has the bandwidth to learn the machinery right now.
+        </p>
+        <ul class="way-list">
+          <li>Working prototypes, shaped to your team and handed over ready to use</li>
+          <li>Runs as a one-time sprint, or an ongoing contract as new needs surface</li>
+          <li>You get results now; the how stays under the hood until you want it</li>
+        </ul>
+        <span class="way-for">Best for: teams that want outcomes, not homework.</span>
+      </article>
+
+      <!-- Mode B: teach you (featured / citron) -->
+      <article class="way way--teach">
+        <span class="way-tag">Mode B · Taught to you</span>
+        <h3>I teach you to build it.</h3>
+        <p class="way-sum">
+          Same conversation, same build — then I open the hood. We look at exactly what the AI
+          handed me, how I reshaped it into something worth trusting, and the best practice for
+          that <em>specific</em> kind of build. Your staff leave able to make the next one.
+        </p>
+        <div class="hood">
+          <div class="hood-row">
+            <span class="hl-lab raw">What the AI gave me, raw</span>
+            <span class="hood-txt">A generic first draft — close, but flat, off-voice, and quietly wrong in the details that matter.</span>
+          </div>
+          <div class="hood-arrow">— massaged into —</div>
+          <div class="hood-row">
+            <span class="hl-lab good">How I got the better result</span>
+            <span class="hood-txt">The prompt moves, the checks, and the taste that turn a demo into a tool you'd actually rely on.</span>
+          </div>
+        </div>
+        <span class="way-for">Best for: teams that want to be empowered — and inspired — to keep building.</span>
+      </article>
+
+    </div>
+
+    <p class="pull rise glide">
+      Most engagements do both: I build the first few <em>for</em> you, then teach you to carry
+      it on. The arc is <span class="mark">dependence &rarr; independence.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE ENGAGEMENT (PHASES) ================================ -->
+<!-- ============================================================ -->
+<section class="section section--dark">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">05</span> The engagement <span class="tick"></span> How a deployment runs</div>
+    <h2 class="rise">Four moves, repeated until the tools are theirs.</h2>
+    <p class="body rise muted">A real sequence, not a flowchart on a wall. It starts with listening and ends with you owning everything that gets built.</p>
+
+    <div class="phases stagger">
+      <div class="phase">
+        <span class="pn">PHASE 01</span>
+        <h3>Listen</h3>
+        <p>A one-on-one with every staff member. What's your week? What eats it? What do you dread? How comfortable are you with computers — honestly? No jargon, no quiz. Just the work, in their words.</p>
+        <span class="when">Week 1</span>
+      </div>
+      <div class="phase">
+        <span class="pn">PHASE 02</span>
+        <h3>Map</h3>
+        <p>Find the handful of places where today's AI genuinely helps — and say plainly where it doesn't. A short, ranked list of prototypes worth building, each tied to a person and a number of hours.</p>
+        <span class="when">Week 1–2</span>
+      </div>
+      <div class="phase">
+        <span class="pn">PHASE 03</span>
+        <h3>Prototype</h3>
+        <p>Build real, working tools in days — not decks, not roadmaps. Put each one in the hands of the person it's for, watch how they actually use it, and cut and reshape around what really happens.</p>
+        <span class="when">Week 2–6</span>
+      </div>
+      <div class="phase">
+        <span class="pn">PHASE 04</span>
+        <h3>Hand off</h3>
+        <p>Tools the staff can run themselves, in plain language, documented. No lock-in, no subscription trap, no dependence on me. If I disappeared, everything keeps working. That's the point.</p>
+        <span class="when">Ongoing</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE FIELD (signature cards) ============================ -->
+<!-- ============================================================ -->
+<section class="section">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">06</span> The field <span class="tick"></span> What this looks like, person by person</div>
+    <h2 class="rise">The same conversation, six desks.</h2>
+    <p class="body rise muted">
+      These are composite archetypes of the people inside a typical small nonprofit — the kind of
+      profile I build for each real staff member during Phase 1. Read the week. Then read the build.
+    </p>
+
+    <div class="field-grid stagger">
+
+      <!-- 1 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Development &amp; Grants Director</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Med</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats her</span>
+          <p class="week">Rewrites the same three success stories into the format each funder demands. Loses days to boilerplate, deadline tracking, and digging up last year's numbers.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A proposal assistant that drafts a first cut from your past winning applications and a funder's own guidelines — plus a living grants calendar that surfaces what's due and what you've already said.</p>
+          <div class="stack"><span class="chip">Claude drafting</span><span class="chip">your archive</span><span class="chip">deadline tracker</span></div>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Program Coordinator</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Low</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats him</span>
+          <p class="week">Messy intake spreadsheets, numbers hand-copied between five files, and a quarterly impact report assembled by brute force the night before the board meeting.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A pipeline that cleans intake data on the way in and a one-click report where the memo <em>is</em> the dashboard — charts, trends, and plain-language findings, generated from the live numbers.</p>
+          <div class="stack"><span class="chip">data cleaning</span><span class="chip">live dashboard</span><span class="chip">auto-report</span></div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Communications Lead</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Med</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats her</span>
+          <p class="week">One good story has to become a newsletter, three social posts, a donor appeal, and a press note — each rewritten by hand, on brand, on deadline, every single week.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A repurposing tool that turns one source story into every channel at once, in your voice — plus on-brand graphics generated in the styles you actually like, no designer required.</p>
+          <div class="stack"><span class="chip">content remix</span><span class="chip">brand voice</span><span class="chip">image gen</span></div>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Volunteer &amp; Outreach Manager</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Low</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats him</span>
+          <p class="week">Matching volunteers to shifts and skills by memory and email chains. Onboarding repeated by hand for every new face. Thank-yous that arrive late, if at all.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A lightweight matching and scheduling tool, plus an onboarding flow that runs itself and warm, personalized thank-yous drafted the moment a shift is logged.</p>
+          <div class="stack"><span class="chip">matching</span><span class="chip">scheduling</span><span class="chip">auto-onboarding</span></div>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Case &amp; Direct-Services Worker</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Low</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats her</span>
+          <p class="week">Hours of case notes after every client. A resource binder that's always out of date. The same eligibility questions answered from memory, one client at a time.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A private note-taker that turns a conversation into a structured record, and a searchable resource finder that matches a client's situation to the right program or referral in seconds.</p>
+          <div class="stack"><span class="chip">note capture</span><span class="chip">resource match</span><span class="chip">local / private</span></div>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="fcard">
+        <div class="fcard-head">
+          <span class="role">Executive Director</span>
+          <span class="comfort">Comfort&nbsp;·&nbsp;Med</span>
+        </div>
+        <div class="fcard-body">
+          <span class="lab">The week that eats her</span>
+          <p class="week">Carrying the whole organization in her head. Board memos rebuilt from stale decks and spreadsheets. No single place that shows what's working across every program at once.</p>
+        </div>
+        <div class="fcard-build">
+          <span class="lab">The build</span>
+          <p class="what">A living map of the organization — programs, grants, and outcomes pulled into one view a busy ED can actually hold — and board memos that update themselves from the real data.</p>
+          <div class="stack"><span class="chip">portfolio view</span><span class="chip">living memo</span><span class="chip">decision support</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="note rise" style="margin-top:36px;max-width:70ch">
+      None of these are off-the-shelf products. Each is a small, sharp, single-purpose tool, shaped
+      to one real person's week and handed to them to keep. That is the whole job.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE TOOLKIT ============================================ -->
+<!-- ============================================================ -->
+<section class="section section--paper2">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">07</span> The toolkit <span class="tick"></span> What I actually build</div>
+    <h2 class="rise">Range, with receipts.</h2>
+    <p class="body rise muted">
+      This isn't theory. Each capability below has already shipped in a real, working project. The
+      same patterns map directly onto a nonprofit's day.
+    </p>
+
+    <div class="kit stagger">
+      <div class="kit-cell">
+        <span class="n">A.</span>
+        <h3>Custom interactive web tools</h3>
+        <p>Data-driven apps and dashboards that open in a browser — no install, no platform fee — and can be shared with a link.</p>
+        <p class="ev"><b>Shipped:</b> an interactive map of a 1,700-plant property from a messy spreadsheet; a five-difficulty bird-sound training game with real audio.</p>
+      </div>
+      <div class="kit-cell">
+        <span class="n">B.</span>
+        <h3>Data pipelines &amp; clean-up</h3>
+        <p>Turning the messy real-world spreadsheets and exports an organization already has into clean, queryable, trustworthy data.</p>
+        <p class="ev"><b>Shipped:</b> a platform analyzing 84,000+ field observations with bias-corrected statistics and an automated daily refresh.</p>
+      </div>
+      <div class="kit-cell">
+        <span class="n">C.</span>
+        <h3>AI woven into the work</h3>
+        <p>Claude used not as a chatbot but as an engine for drafting, scoring, sorting, and verifying — inside tools built for one job.</p>
+        <p class="ev"><b>Shipped:</b> a personalized digest that scouts live sources, ranks relevance with an LLM, and remixes it into a clean briefing.</p>
+      </div>
+      <div class="kit-cell">
+        <span class="n">D.</span>
+        <h3>Documents &amp; reports that write themselves</h3>
+        <p>Polished, on-brand reports, briefs, and pages generated straight from live data — and verified against the source.</p>
+        <p class="ev"><b>Shipped:</b> a pipeline that drafts, fact-checks against primary sources, and narrates long-form essays end to end.</p>
+      </div>
+      <div class="kit-cell">
+        <span class="n">E.</span>
+        <h3>Automation that runs on its own</h3>
+        <p>Scheduled jobs that fetch, update, and publish without anyone touching them — quietly, every day, for free.</p>
+        <p class="ev"><b>Shipped:</b> automated daily data updates and recurring research digests for a working lab, no servers to babysit.</p>
+      </div>
+      <div class="kit-cell">
+        <span class="n">F.</span>
+        <h3>Design that doesn't look generic</h3>
+        <p>Every tool made to feel considered and human — this proposal is a fair sample — never like default "AI slop."</p>
+        <p class="ev"><b>Shipped:</b> bespoke sites, interactive study guides, and data visualizations with real typographic care.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE METHOD / WHY ME ==================================== -->
+<!-- ============================================================ -->
+<section class="section">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">08</span> The record <span class="tick"></span> Why trust me with your team</div>
+    <div class="split">
+      <div class="col rise">
+        <h2>The discovery method already runs on real people.</h2>
+      </div>
+      <div class="col rise">
+        <p class="body" style="margin-top:0">
+          The Phase 1 conversation isn't improvised. I've built a working practice around exactly it:
+          profiling a real person by what they do, how comfortable they are with technology, and what
+          they care about — then mapping genuinely useful, no-code tools onto their actual workflow.
+        </p>
+        <p class="body">
+          I've done this for a foundation executive director, a literary scholar, a commercial
+          producer, an academic-publishing marketer, and a biotech attorney — each non-technical, each
+          handed a short, specific set of things AI could build <em>for them</em>, in their world.
+          A nonprofit's staff is simply the same exercise, run across one team, with working
+          prototypes at the end instead of recommendations.
+        </p>
+        <p class="body">
+          The bias throughout: <strong>small and opinionated over big and generic.</strong>
+          Cheap-to-run over subscription-heavy. Local and private when the data is sensitive. Built to
+          be handed off, not held hostage.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === ON TRUST =============================================== -->
+<!-- ============================================================ -->
+<section class="section section--dark">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">09</span> On trust <span class="tick"></span> The part hesitant teams ask about first</div>
+    <h2 class="rise">The guardrails are the point, not the fine print.</h2>
+
+    <div class="trust stagger">
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>Your people stay in the loop</h3>
+          <p>Tools draft, sort, and suggest. A human always decides. Nothing goes out the door, or into a record, without a person who chose it.</p>
+        </div>
+      </div>
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>Sensitive data can stay local</h3>
+          <p>For client records, donor details, or anything confidential, tools can run on your own machines and never send private data to an outside service.</p>
+        </div>
+      </div>
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>You own everything</h3>
+          <p>Every tool, its code, and its documentation are yours to keep, run, and change. No lock-in, no platform you're forced to keep paying.</p>
+        </div>
+      </div>
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>Honest about the limits</h3>
+          <p>Where AI is unreliable for your task, I'll say so and we won't ship it. Numbers tied to your mission get verified against the source before anyone sees them.</p>
+        </div>
+      </div>
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>No one gets automated away</h3>
+          <p>The premise is augmentation. Every build targets the drudgery, never the judgment, relationships, or care that only your staff provide.</p>
+        </div>
+      </div>
+      <div class="item">
+        <span class="dot"></span>
+        <div>
+          <h3>Built for the budget you have</h3>
+          <p>Default to free and low-cost tooling. The goal is to give hours and capacity back to the mission, not to add a recurring expense.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === THE SHAPES (engagement models) ========================= -->
+<!-- ============================================================ -->
+<section class="section section--paper2">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">10</span> The shapes <span class="tick"></span> Ways to start</div>
+    <h2 class="rise">Begin small. Prove it. Then go wider.</h2>
+    <p class="body rise muted">Three commitments, low first — and each can run in either mode: built <em>for</em> you, or taught <em>to</em> your team. Exact terms are set together once I understand the size and shape of your work.</p>
+
+    <div class="shapes stagger">
+      <div class="shape">
+        <span class="nm">Start here</span>
+        <h3>The Pilot</h3>
+        <span class="dur">~2 weeks · one department</span>
+        <p>I sit with one team, learn the work, and ship one or two working prototypes. A low-risk way to feel the difference before committing to anything larger.</p>
+        <span class="for">Best for: a wary board that wants proof, not promises.</span>
+      </div>
+      <div class="shape feat">
+        <span class="badge">Most impact</span>
+        <span class="nm">The core engagement</span>
+        <h3>The Embed</h3>
+        <span class="dur">~6–10 weeks · whole staff</span>
+        <p>The full deployment: a conversation with every staff member, a mapped and ranked plan, and a set of prototypes built, tested in real use, and handed off across the organization.</p>
+        <span class="for">Best for: an organization ready to change how the work feels.</span>
+      </div>
+      <div class="shape">
+        <span class="nm">Stay sharp</span>
+        <h3>The Retainer</h3>
+        <span class="dur">monthly · light touch</span>
+        <p>After the embed, a standing line to extend tools as needs shift, adopt new capabilities as they arrive, and keep everything running — without rebuilding the relationship each time.</p>
+        <span class="for">Best for: keeping the tools alive as the work evolves.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === CLOSE ================================================== -->
+<!-- ============================================================ -->
+<section class="section section--floor">
+  <div class="wrap">
+    <div class="block rise"><span class="idx">11</span> Next <span class="tick"></span> One conversation</div>
+    <h2 class="close-h rise">It starts with a single <span class="spark">conversation</span> — not a contract.</h2>
+    <p class="body rise" style="margin-top:26px;max-width:56ch">
+      No commitment, no sales deck. Just an hour to hear what your team does and where the days get
+      lost. If there's something worth building, I'll show you exactly what — and we can start with
+      a two-week pilot. If there isn't, I'll tell you that too.
+    </p>
+
+    <div class="cta-row rise">
+      <a class="cta" href="mailto:peter.repetti@gmail.com?subject=Forward%20Deployed%20—%20intro%20conversation">Book the first conversation &rarr;</a>
+      <a class="cta ghost" href="mailto:peter.repetti@gmail.com?subject=Forward%20Deployed%20—%20pilot%20inquiry">Ask about a pilot</a>
+    </div>
+
+    <div class="colophon rise">
+      <span>Forward Deployed — embedded AI prototyping for nonprofits</span>
+      <span>Prepared by Peter Repetti &middot; peter.repetti@gmail.com</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- === MOTION SCRIPT ========================================== -->
+<!-- ============================================================ -->
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){
+    document.querySelectorAll('.rise,.stagger').forEach(function(el){el.classList.add('in')});
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rise,.stagger').forEach(function(el){io.observe(el)});
+})();
+</script>
+</body>
+</html>
