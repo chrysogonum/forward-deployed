@@ -1,2 +1,7 @@
 .DS_Store
 proposal-preview.pdf
+# internal session state — do not publish to public repo
+PROJECT_STATE.md
+DECISIONS.md
+FACT_LOCK.md
+.claude/
